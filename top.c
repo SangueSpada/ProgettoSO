@@ -18,29 +18,18 @@ void processdir(const struct dirent *piddir)
     FILE *pidmemfile;
     int  offset = strlen(MEM_FIELD_NAME);
     
-    /* Construct full path of the file containt memory-info if this PID */
-    snprintf(path, BUFSZ, "/proc/%s/status", piddir->d_name);
-    
-    /* Open the file */
-    pidmemfile = fopen(path, "rt");
+    char filename[1024];
+    sprintf(filename, "/proc/%s/stat", piddir->d_name);
+    FILE *f = fopen(filename, "r");
 
-    /* Read line-by-line until we found the line we want */
-    while (fgets(line, BUFSZ, pidmemfile) != NULL) {
-        memstr = strstr(line, MEM_FIELD_NAME);
-        if (memstr != NULL) {  /* Found our line */
-            memstr += offset;
-            while (*memstr == ' ' || *memstr == '\t') {
-                if (*memstr == '\0') {
-                    fprintf(stderr, "unexpected error in %s.\n", path);
-                    exit(1);
-                }
-                ++memstr;
-            }
-            printf("PID %s: %s", piddir->d_name, memstr);
-            break;
-        }
-    }
-    fclose(pidmemfile);
+    int unused;
+    char comm[1000];
+    char state;
+    int ppid;
+    fscanf(f, "%d %s %c %d", &unused, comm, &state, &ppid);
+    printf("%s\t%c\t%s\n", piddir->d_name,state,comm);
+    fclose(f);
+    
 }
 
 
@@ -54,11 +43,11 @@ int main()
          perror("Could not open directory /proc");
          return 1;
      }
+     printf("PPID\tSTATE\tCOMMAND\n");
 
      while(1) {
          procentry = readdir(procdir);
          if (procentry == NULL) {
-            perror("Could not read procentry");
             break;
          }
          /* if the name of an entry in /proc has only digits, then
@@ -69,5 +58,18 @@ int main()
              processdir(procentry);
          }
      }
-     return 0;
+
+     char input[10];
+     printf("SENTI ALLORA PRATICAMENTE SCRIVI QUA: ");
+     while(1){
+        scanf("%s",input);
+        if(strcmp("quit",input)==0){
+            return 0;
+        }
+        else{
+            printf("%s\n",input);
+        }
+
+     }
+     
 }
