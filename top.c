@@ -8,6 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/sysinfo.h>
+#include <ctype.h>
 
 #define BUFSZ 1024
 #define MEM_FIELD_NAME "VmSize:"
@@ -141,11 +142,17 @@ void processdir(const struct dirent *piddir)
     
 }
 
-void split_cmd_line(char* data, char* line, char* delim){
+void split_cmd_line(char* data,int* pid, char* line, char* delim){
     char* tmp = strtok(line,delim);
-    data[0]=*tmp;
-    tmp = strtok(NULL,delim);
-    data[1]=*tmp;
+    strcpy(data,tmp);
+    tmp = (strtok(NULL,delim));
+    if(tmp!=NULL ){
+    int res=atoi(tmp);
+    if(res!=0){
+    *pid=atoi(tmp);
+    }
+    
+    }
 }
 
 
@@ -182,28 +189,81 @@ int main(int argc, int* argv)
          }
      }
 
-     char* command;
-     int pid;
-     char * data=malloc(2*sizeof(char));
-     printf("SENTI ALLORA PRATICAMENTE SCRIVI QUA o typpa help: ");
+     char* command=(char*)malloc(10*sizeof(char));
+     char * comm=(char*) malloc(10*sizeof(char));
+     int* pid=(int*) calloc(1,sizeof(int));
+     *pid=-1;
      while(1){
-        scanf("[a-zA-z]+[\\s]?[0-9]*",command);
-        if(strcmp("help",command)==0){
+        printf("SENTI ALLORA PRATICAMENTE SCRIVI QUA o typpa help: ");
+
+        scanf("%[^\n]%*c",command);
+        split_cmd_line(comm,pid,command," ");
+        //printf("%s ->  %d",comm,*pid);
+
+        if(strcmp("help",comm)==0){
             printf("quit - Exit the program\nkill [pid] - kill a process with pid [pid]\nterminate [pid] - terminate a process with pid [pid]\nsuspend [pid] - suspend a process with pid [pid]\nresume [pid] - resume a process with pid [pid]\n");
         }
-        else if(strcmp("quit",command)==0){
+        else if(strcmp("quit",comm)==0){
             return 0;
         }
         
-        else if(strcmp("kill",command)==0)
+        else if(strcmp("suspend",comm)==0)
         {
+            if(*pid==-1){
+                printf("inserire un pid valido\n");
+
+            }
+            else{
            //split_cmd_line(data,input," ");
-           printf("%s, \n",command);
+           printf("eseguita la %s! \n",comm);
+            *pid=-1;
+            }
+
+        }
+        else if(strcmp("terminate",comm)==0)
+        {
+            if(*pid==-1){
+                printf("inserire un pid valido\n");
+
+            }
+            else{
+           //split_cmd_line(data,input," ");
+           printf("eseguita la %s! \n",comm);
+            *pid=-1;
+            }
+
+        }
+        else if(strcmp("resume",comm)==0)
+        {
+            if(*pid==-1){
+                printf("inserire un pid valido\n");
+
+            }
+            else{
+           //split_cmd_line(data,input," ");
+           printf("eseguita la %s! \n",comm);
+            *pid=-1;
+            }
+
+        }
+        else if(strcmp("kill",comm)==0)
+        {
+            if(*pid==-1){
+                printf("inserire un pid valido\n");
+
+            }
+            else{
+           //split_cmd_line(data,input," ");
+           printf("eseguita la %s! \n",comm);
+            *pid=-1;
+            }
 
         }
         else{
-            printf("aoaoao %s\n",command);
+            printf("%s non è un comando valido: help per l' elenco dei comandi\n",command);
         }
+        
+        
 
      }
      
