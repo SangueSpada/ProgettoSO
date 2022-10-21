@@ -59,7 +59,7 @@ char** split_string(char *line, int* s) {
     char** res=(char **)malloc(100*sizeof(char*));
 
     int index=0;
-    const char delimiter[] = " ";
+    const char* delimiter = " ";
     char * tmp;
 
     tmp = strtok(line, delimiter);
@@ -72,7 +72,8 @@ char** split_string(char *line, int* s) {
     //printf("%s\n", tmp);
     tmp = strtok(NULL, ")");
 
-    char * d=concat(tmp,')');
+    char * d=concat(tmp,')'); 
+    //il comm puo avere spazi quindi essendo il secondo token ci arrangiamo direttamente cosi. 
 
     res[index]=d;
     index++;
@@ -82,13 +83,12 @@ char** split_string(char *line, int* s) {
     for (;;) {
         tmp = strtok(NULL, delimiter);
         if (tmp == NULL){
-            *s=index;
+            *s=index; //size della res
             return res;
         }
         
         res[index]=tmp;
         index++;
-        //printf("%s\n", tmp);
     }
 }
 
@@ -98,10 +98,7 @@ void processdir(const struct dirent *piddir)
     //printf("%s\n",piddir->d_name);
     char *lines = NULL;
     size_t size;
-    char path[BUFSZ];
-    char line[BUFSZ];
-    char *memstr;
-    FILE *pidmemfile;
+
     int  offset = strlen(MEM_FIELD_NAME);
     
     char filename[1024];
@@ -112,9 +109,10 @@ void processdir(const struct dirent *piddir)
     char** data;
     int s=0;
 
-    while (getline(&lines, &size, f) != -1) {
+    if(getline(&lines, &size, f) != -1){
         data=split_string(lines, &s);
     }
+    
 
     //printf("size= %d\n",s);
     /*for(int i=0;i<s;i++){
@@ -123,9 +121,7 @@ void processdir(const struct dirent *piddir)
 
     }*/
 
-
-
-
+    //calcoli temporali per CPU Usage
     float total_time= atoi(data[13])+atoi(data[14])+atoi(data[15])+atoi(data[16]);
 
     float seconds= uptime - (atoi(data[21])/Hertz);
@@ -137,7 +133,7 @@ void processdir(const struct dirent *piddir)
 
 
 
-    printf("%s\t%s\t%-7.2f\t\t\t%s\n", piddir->d_name,data[2],cpu_usage, data[1]);
+    printf("%s\t%s\t%-7.2f%%\t\t\t%s\n", piddir->d_name,data[2],cpu_usage, data[1]);
 
     free(data[1]);
     free(data);
@@ -145,16 +141,23 @@ void processdir(const struct dirent *piddir)
     
 }
 
+void split_cmd_line(char* data, char* line, char* delim){
+    char* tmp = strtok(line,delim);
+    data[0]=*tmp;
+    tmp = strtok(NULL,delim);
+    data[1]=*tmp;
+}
 
-int main() 
+
+int main(int argc, int* argv) 
 {
      DIR *procdir;
      struct dirent *procentry;
 
      Hertz= sysconf(_SC_CLK_TCK);
-     uptime=get_uptime();
+     uptime=get_uptime(); //prende inizio dell'OS?
 
-     if(uptime==-1){
+     if(uptime==-1){ 
         return -1;
      }
 
@@ -163,7 +166,7 @@ int main()
          perror("Could not open directory /proc");
          return 1;
      }
-     printf("PPID\tSTATE\tCPU_USAGE(perc.)\t\t\tCOMMAND\n");
+     printf("PPID\tSTATE\tCPU_USAGE(%%)\t\t\tCOMMAND\n");
 
      while(1) {
          procentry = readdir(procdir);
@@ -179,15 +182,27 @@ int main()
          }
      }
 
-     char input[10];
-     printf("SENTI ALLORA PRATICAMENTE SCRIVI QUA: ");
+     char* command;
+     int pid;
+     char * data=malloc(2*sizeof(char));
+     printf("SENTI ALLORA PRATICAMENTE SCRIVI QUA o typpa help: ");
      while(1){
-        scanf("%s",input);
-        if(strcmp("quit",input)==0){
+        scanf("[a-zA-z]+[\\s]?[0-9]*",command);
+        if(strcmp("help",command)==0){
+            printf("quit - Exit the program\nkill [pid] - kill a process with pid [pid]\nterminate [pid] - terminate a process with pid [pid]\nsuspend [pid] - suspend a process with pid [pid]\nresume [pid] - resume a process with pid [pid]\n");
+        }
+        else if(strcmp("quit",command)==0){
             return 0;
         }
+        
+        else if(strcmp("kill",command)==0)
+        {
+           //split_cmd_line(data,input," ");
+           printf("%s, \n",command);
+
+        }
         else{
-            printf("%s\n",input);
+            printf("aoaoao %s\n",command);
         }
 
      }
