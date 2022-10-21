@@ -7,9 +7,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/sysinfo.h>
-#include <ctype.h>
-
+#include <sys/sysinfo.h>SangueSpada/ProgettoSO.git
 #define BUFSZ 1024
 #define MEM_FIELD_NAME "VmSize:"
 
