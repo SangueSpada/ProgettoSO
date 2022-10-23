@@ -71,11 +71,9 @@ long get_uptime(){
 }
 
 
-
 void processdir(const struct dirent *piddir)
 {
 
-    //printf("%s\n",piddir->d_name);
     char *lines = NULL;
     size_t size;
     
@@ -142,16 +140,16 @@ int main(int argc, int* argv) {
         }
     }
 
-    char* command=(char*)malloc(10*sizeof(char));
-    char * comm=(char*) malloc(10*sizeof(char));
-    int* pid=(int*) calloc(1,sizeof(int));
+    char* command=(char*)malloc(20*sizeof(char));
+    char* comm=(char*) malloc(10*sizeof(char));
+    int pid;
     while(1){
         printf("SENTI ALLORA PRATICAMENTE SCRIVI QUA o typpa help: ");
-        fgets(command, sizeof command, stdin);
-        int state = sscanf(command,"%s %d", comm,pid);
+        fgets(command,20, stdin);
+        int state = sscanf(command,"%s %8d", comm,&pid);
         if(state == 1){
             if(strcmp("help",comm)==0){
-            printf("\nUSAGE:\nquit - Exit the program\nkill [pid] - kill a process with pid [pid]\nterminate [pid] - terminate a process with pid [pid]\nsuspend [pid] - suspend a process with pid [pid]\nresume [pid] - resume a process with pid [pid]\n\n");
+            printf("\nUSAGE:\nquit - Exit the program\nkill [pid] - kill a running process with pid [pid]\nterminate [pid] - kill a suspended process with pid [pid]\nsuspend [pid] - suspend a running process with pid [pid]\nresume [pid] - resume a suspended process with pid [pid]\n\n");
             }
             else if(strcmp("quit",comm)==0){
             return 0;
@@ -163,20 +161,24 @@ int main(int argc, int* argv) {
         }
         else if(state == 2){
             if(strcmp("suspend",comm)==0){
-                printf("eseguita la %s con pid %d! \n",comm,*pid);
+                kill((pid_t)pid,SIGSTOP);
+                printf("eseguita la %s con pid %d! \n",comm,pid);
             }
             else if(strcmp("terminate",comm)==0){
+                kill((pid_t)pid,SIGTERM);
+                printf("eseguita la %s con pid %d! \n",comm,pid);
                 
             }
             else if(strcmp("resume",comm)==0){
-                printf("eseguita la %s con pid %d! \n",comm,*pid);
+                kill((pid_t)pid,SIGCONT);
+                printf("eseguita la %s con pid %d! \n",comm,pid);
             }
             else if(strcmp("kill",comm)==0){
-
-                printf("eseguita la %s con pid %d! \n",comm,*pid);
+                kill((pid_t)pid,SIGKILL);
+                printf("eseguita la %s con pid %d! \n",comm,pid);
             }
             else{
-                printf("%s %d non è un comando valido: help per l' elenco dei comandi\n",command,*pid);
+                printf("%s %d non è un comando valido: help per l' elenco dei comandi\n",command,pid);
             }
         }
         else{
