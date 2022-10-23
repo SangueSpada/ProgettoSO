@@ -13,6 +13,43 @@
 long Hertz=0;
 long uptime=0;
 
+
+
+
+char states(int pid){
+
+//char* directory="/proc/"+itoa(pid);    
+
+//DIR* procdir = opendir("/proc");
+char *lines = NULL;
+char file_n[30];
+char n_pid[10];
+char status;
+size_t size;
+char* str;
+
+sprintf(n_pid, "%d", pid);
+
+int res=sprintf(file_n, "/proc/%s/stat", n_pid);
+
+FILE *f = fopen(file_n, "r");
+if(f==NULL){
+    printf("errore apertura file stat");
+    return ' ';
+}
+
+res=fscanf(f, "%*d %*s %c", &status);
+if(res==-1){
+printf("errore lettura status");
+return ' ';
+}
+
+return status;
+
+
+}
+
+
 char * concat(char* s1, char c){
     char * res=(char*) malloc((strlen(s1)+2)*sizeof(char));
     int i;
@@ -160,18 +197,37 @@ int main(int argc, int* argv) {
             
         }
         else if(state == 2){
+
+            char stato=states(pid);
+
             if(strcmp("suspend",comm)==0){
-                kill((pid_t)pid,SIGSTOP);
+
+                if(stato=='R'){
+                kill((pid_t)pid,SIGSTOP);       
                 printf("eseguita la %s con pid %d! \n",comm,pid);
+                }
+                else{
+                    printf("non permesso\n");
+                }
             }
             else if(strcmp("terminate",comm)==0){
+                if(stato=='S'){                              
                 kill((pid_t)pid,SIGTERM);
                 printf("eseguita la %s con pid %d! \n",comm,pid);
+                }
+                else{
+                    printf("non permesso\n");
+                }
                 
             }
             else if(strcmp("resume",comm)==0){
+                if(stato=='S'){
                 kill((pid_t)pid,SIGCONT);
                 printf("eseguita la %s con pid %d! \n",comm,pid);
+                }
+                else{
+                    printf("non permesso\n");
+                }
             }
             else if(strcmp("kill",comm)==0){
                 kill((pid_t)pid,SIGKILL);
