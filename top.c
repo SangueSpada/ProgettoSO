@@ -10,18 +10,23 @@
 #include <sys/sysinfo.h>
 #include <signal.h>
 
+#include "process.h"
+
 long Hertz=0;
 long uptime=0;
 
 
 
 
-char states(int pid){
+char* states(int pid, Process_t *process){
+    Process_t *p = search(process,pid);
+    return p->status;
+
 
 //char* directory="/proc/"+itoa(pid);    
 
 //DIR* procdir = opendir("/proc");
-char *lines = NULL;
+/*char *lines = NULL;
 char file_n[30];
 char n_pid[10];
 char status;
@@ -45,10 +50,10 @@ return ' ';
 }
 
 return status;
+*/
 
 
 }
-
 
 char * concat(char* s1, char c){
     char * res=(char*) malloc((strlen(s1)+2)*sizeof(char));
@@ -108,7 +113,7 @@ long get_uptime(){
 }
 
 
-void processdir(const struct dirent *piddir)
+void processdir(const struct dirent *piddir, Process_t *process)
 {
 
     char *lines = NULL;
@@ -132,26 +137,32 @@ void processdir(const struct dirent *piddir)
 
 
     //values
-    const char* pid = piddir->d_name;
+    
+    int pid = atoi(piddir->d_name);
     char* status = data[2];
     float cpu_usage= 100 *( (total_time/Hertz)/seconds);
     float vsize = atoi(data[22])/1024;
     char* command= data[1];
+    insert(process,pid,status,cpu_usage,vsize,command);
 
-
-    printf("%s\t%s\t%-7.2f%%\t%.1fkb\t\t%s\n", pid,status,cpu_usage,vsize,command);
 
     fclose(f);
     
 }
 
 int main(int argc, int* argv) {
+    
+    //variabili inizializzate per leggere /proc
     DIR *procdir;
     struct dirent *procentry;
 
-    Hertz= sysconf(_SC_CLK_TCK);
-    uptime=get_uptime(); //prende inizio dell'OS?
+    //inizializzazione linked list
+    Process_t *p =NULL;
 
+
+    //variabili inizializzate per calcolo CPU usage
+    Hertz= sysconf(_SC_CLK_TCK);
+    uptime=get_uptime(); 
     if(uptime==-1){ 
         return -1;
     }
@@ -161,27 +172,30 @@ int main(int argc, int* argv) {
         perror("Could not open directory /proc");
         return 1;
     }
+    
+    //da rendere piu carino
     printf("PPID\tSTATE\tCPU_USAGE(%%)\tMEMORY USAGE(kb)\tCOMMAND\n");
 
+    //legge /proc per ogni linea
     while(1) {
+
         procentry = readdir(procdir);
         if (procentry == NULL) {
             break;
         }
-         /* if the name of an entry in /proc has only digits, then
-          * it is a subdirectory containg info about a process,
-          * while the name itself is the PID of the process.
-          */        
-        if (!fnmatch("[1-9]*", procentry->d_name, 0)) {
-             processdir(procentry);
+
+        // il nome di ogni processo e' il PID che coincide con un codice numerico diverso da 0       
+        if (!fnmatch("[1-9]*", procentry->d_name, 0)) { 
+             processdir(procentry,p);
         }
     }
+    print(p);
 
     char* command=(char*)malloc(20*sizeof(char));
     char* comm=(char*) malloc(10*sizeof(char));
     int pid;
     while(1){
-        printf("SENTI ALLORA PRATICAMENTE SCRIVI QUA o typpa help: ");
+        printf("type help for usage or write your command: ");
         fgets(command,20, stdin);
         int state = sscanf(command,"%s %8d", comm,&pid);
         if(state == 1){
@@ -198,11 +212,11 @@ int main(int argc, int* argv) {
         }
         else if(state == 2){
 
-            char stato=states(pid);
+            char* stato=states(pid,p);
 
             if(strcmp("suspend",comm)==0){
 
-                if(stato=='R'){
+                if(*stato=='R'){
                 kill((pid_t)pid,SIGSTOP);       
                 printf("eseguita la %s con pid %d! \n",comm,pid);
                 }
@@ -211,7 +225,7 @@ int main(int argc, int* argv) {
                 }
             }
             else if(strcmp("terminate",comm)==0){
-                if(stato=='S'){                              
+                if(*stato=='S'){                              
                 kill((pid_t)pid,SIGTERM);
                 printf("eseguita la %s con pid %d! \n",comm,pid);
                 }
@@ -221,7 +235,7 @@ int main(int argc, int* argv) {
                 
             }
             else if(strcmp("resume",comm)==0){
-                if(stato=='S'){
+                if(*stato=='S'){
                 kill((pid_t)pid,SIGCONT);
                 printf("eseguita la %s con pid %d! \n",comm,pid);
                 }
