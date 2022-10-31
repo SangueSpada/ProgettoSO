@@ -12,6 +12,8 @@
 
 #include "process.h"
 
+//gloabal variables
+
 long Hertz=0;
 long uptime=0;
 
@@ -113,7 +115,7 @@ long get_uptime(){
 }
 
 
-void processdir(const struct dirent *piddir, Process_t *process)
+void processdir(const struct dirent *piddir, Process_t* process)
 {
 
     char *lines = NULL;
@@ -143,7 +145,7 @@ void processdir(const struct dirent *piddir, Process_t *process)
     float cpu_usage= 100 *( (total_time/Hertz)/seconds);
     float vsize = atoi(data[22])/1024;
     char* command= data[1];
-    insert(process,pid,status,cpu_usage,vsize,command);
+    insert(&process,pid,status,cpu_usage,vsize,command);
 
 
     fclose(f);

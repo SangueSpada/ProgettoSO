@@ -1,32 +1,31 @@
 #include "process.h"
-
+#include <string.h>
 
 Process_t* init(void){
     return NULL;
 }
 
-void insert(Process_t* p, const int pid, char* status, float cpu_usage, float vsize, char* command){
+void insert(Process_t** p, const int pid, char* status, float cpu_usage, float vsize, char* command){
     Process_t *cur, *prev, *new_node;
     new_node = (Process_t*) malloc(sizeof(Process_t));
     if(new_node == NULL){
         printf("Cannot allocate new nodes");
     }
-
     new_node->cpu_usage = cpu_usage;
-    for(cur = p, prev=NULL; 
+    for(cur = *p, prev=NULL; 
         cur != NULL && new_node->cpu_usage > cur->cpu_usage; 
         prev = cur, cur = cur->next);
-    
     new_node->pid = pid;
-    new_node->status = status;
+    new_node->status = (char*) malloc(strlen(status)+1);
+    strcpy(new_node->status,status);
     new_node->vsize = vsize;
-    new_node->command = command;
+    new_node->command = (char*) malloc(strlen(command)+1);
+    strcpy(new_node->command,command);
     
     new_node->next = cur;
     if(prev == NULL) {
         printf("PRIMO\n");
-        p = new_node; //se e il primo elemento allora new node e la testa della lista
-    
+        *p = new_node; //se e il primo elemento allora new node e la testa della lista
     }
     else{
         printf("ALTRI\n");
@@ -51,8 +50,7 @@ void print(Process_t* p){
     
     Process_t *cur;
     if(p == NULL){
-        printf("P e null diocane");
-        return;
+        printf("P = null\n");
     }
     for(cur = p; cur != NULL; cur = cur->next){
 
