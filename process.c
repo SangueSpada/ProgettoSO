@@ -11,10 +11,12 @@ void insert(Process_t** p, const int pid, char* status, float cpu_usage, float v
     if(new_node == NULL){
         printf("Cannot allocate new nodes");
     }
-    new_node->cpu_usage = cpu_usage;
+    
     for(cur = *p, prev=NULL; 
-        cur != NULL && new_node->cpu_usage > cur->cpu_usage; 
+        cur != NULL && cpu_usage > cur->cpu_usage; 
         prev = cur, cur = cur->next);
+    printf("%d ",cur==NULL);
+    new_node->cpu_usage = cpu_usage;
     new_node->pid = pid;
     new_node->status = (char*) malloc(strlen(status)+1);
     strcpy(new_node->status,status);
@@ -24,11 +26,9 @@ void insert(Process_t** p, const int pid, char* status, float cpu_usage, float v
     
     new_node->next = cur;
     if(prev == NULL) {
-        printf("PRIMO\n");
         *p = new_node; //se e il primo elemento allora new node e la testa della lista
     }
     else{
-        printf("ALTRI\n");
         prev->next = new_node;
     }
         
@@ -50,7 +50,7 @@ void print(Process_t* p){
     
     Process_t *cur;
     if(p == NULL){
-        printf("P = null\n");
+        printf("ERRORE P = null\n");
     }
     for(cur = p; cur != NULL; cur = cur->next){
 
