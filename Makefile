@@ -2,13 +2,13 @@ CC=gcc
 CCOPTS=--std=gnu99 -Wall
 AR=ar
 
-OBJS=process.o
+OBJS=process.o functions.o
 
-HEADERS=process.h
+HEADERS=process.h functions.h
 
-LIBS=libprocess.a
+LIBS=libtop.a 
 
-BINS=top
+BINS=top stuff
 
 
 .phony: clean all
@@ -19,8 +19,9 @@ all:	$(BINS) $(LIBS)
 %.o:	%.c $(HEADERS)
 	$(CC) $(CCOPTS) -c -o $@  $<
 
-libprocess.a:	$(OBJS) 
+libtop.a:	$(OBJS) 
 	$(AR) -rcs $@ $^
+	$(RM) $(OBJS)
 
 
 top:	top.c $(LIBS)
