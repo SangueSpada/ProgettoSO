@@ -230,14 +230,17 @@ void processdir(const struct dirent *piddir)
             
         }
         else if(state == 2){
-
+            
             char* stato=states(pid,p);
+            if(stato == NULL){
+                printf("Il processo con pid %d non esiste piu.\n",pid);
+                continue;
+            }
             printf("il processo %d ha stato: %s! \n",pid,stato);
-
 
             if(strcmp("suspend",comm)==0){
 
-                if(*stato=='R'){
+                if(*stato!='T'){
                     int res = kill((pid_t)pid,SIGSTOP);
                     if(res == -1){
                         printf("error in SIGSTOP %s\n", strerror(errno));
@@ -247,11 +250,11 @@ void processdir(const struct dirent *piddir)
                     }
                 }
                 else{
-                    printf("Quindi non si puo sospendere\n");
+                    printf("Quindi e' gia sospeso\n");
                 }
             }
             else if(strcmp("terminate",comm)==0){
-                if(*stato=='S'){                              
+                if(*stato=='T'){                              
                     int res =kill((pid_t)pid,SIGTERM);
                     if(res == -1){
                         printf("error in SIGTERM %s\n", strerror(errno));
@@ -266,7 +269,7 @@ void processdir(const struct dirent *piddir)
                 
             }
             else if(strcmp("resume",comm)==0){
-                if(*stato=='S'){
+                if(*stato=='T'){
                     int res = kill((pid_t)pid,SIGCONT);
                     if(res == -1){
                         printf("error in SIGCONT %s\n", strerror(errno));
