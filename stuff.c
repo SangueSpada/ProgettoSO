@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 
-int main(int argc, int* argv){
+ int main(int argc, char *argv[]){
     printf("STARTING IN 3 SECONDS\n");
     sleep(3);
     while(1){

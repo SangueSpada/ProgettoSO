@@ -15,7 +15,6 @@ void insert(Process_t** p, const int pid, char* status, float cpu_usage, float v
     for(cur = *p, prev=NULL; 
         cur != NULL && cpu_usage > cur->cpu_usage; 
         prev = cur, cur = cur->next);
-    printf("%d ",cur==NULL);
     new_node->cpu_usage = cpu_usage;
     new_node->pid = pid;
     new_node->status = (char*) malloc(strlen(status)+1);

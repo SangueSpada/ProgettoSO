@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <sys/sysinfo.h>
 #include <signal.h>
+#include <errno.h>
 
 #include "process.h"
 
@@ -22,39 +23,26 @@ Process_t* p = NULL;
 
 
 char* states(int pid, Process_t *process){
-    Process_t *p = search(process,pid);
-    return p->status;
+    char file_n[30];
+    char n_pid[10];
+    char* status;
+    char* err = NULL;
+    sprintf(n_pid, "%d", pid); //int to string
+    int res=sprintf(file_n, "/proc/%d/stat", pid);
+    
+    FILE *f = fopen(file_n, "r");
+    if(f==NULL){
+        printf("errore apertura file stat");
+        return err;
+    }
 
+    res=fscanf(f, "%*d %*s %s", status); //evitiamo il pid e il command
+    if(res==-1){
+        printf("errore lettura status");
+        return err;
+    }
 
-//char* directory="/proc/"+itoa(pid);    
-
-//DIR* procdir = opendir("/proc");
-/*char *lines = NULL;
-char file_n[30];
-char n_pid[10];
-char status;
-size_t size;
-char* str;
-
-sprintf(n_pid, "%d", pid);
-
-int res=sprintf(file_n, "/proc/%s/stat", n_pid);
-
-FILE *f = fopen(file_n, "r");
-if(f==NULL){
-    printf("errore apertura file stat");
-    return ' ';
-}
-
-res=fscanf(f, "%*d %*s %c", &status);
-if(res==-1){
-printf("errore lettura status");
-return ' ';
-}
-
-return status;
-*/
-
+    return status;
 
 }
 
@@ -153,7 +141,7 @@ void processdir(const struct dirent *piddir)
     
 }
 
-int main(int argc, int* argv) {
+ int main(int argc, char *argv[]){
     
     //variabili inizializzate per leggere /proc
     DIR *procdir;
@@ -200,10 +188,10 @@ int main(int argc, int* argv) {
         int state = sscanf(command,"%s %8d", comm,&pid);
         if(state == 1){
             if(strcmp("help",comm)==0){
-            printf("\nUSAGE:\nquit - Exit the program\nkill [pid] - kill a running process with pid [pid]\nterminate [pid] - kill a suspended process with pid [pid]\nsuspend [pid] - suspend a running process with pid [pid]\nresume [pid] - resume a suspended process with pid [pid]\n\n");
+                printf("\nUSAGE:\nquit - Exit the program\nkill [pid] - kill a running process with pid [pid]\nterminate [pid] - kill a suspended process with pid [pid]\nsuspend [pid] - suspend a running process with pid [pid]\nresume [pid] - resume a suspended process with pid [pid]\n\n");
             }
             else if(strcmp("quit",comm)==0){
-            return 0;
+                return 0;
             }
             else{
                 printf("%s non è un comando valido: help per l' elenco dei comandi\n",command);
@@ -213,46 +201,68 @@ int main(int argc, int* argv) {
         else if(state == 2){
 
             char* stato=states(pid,p);
+            printf("il processo %d ha stato: %s! \n",pid,stato);
+
 
             if(strcmp("suspend",comm)==0){
 
                 if(*stato=='R'){
-                kill((pid_t)pid,SIGSTOP);       
-                printf("eseguita la %s con pid %d! \n",comm,pid);
+                    int res = kill((pid_t)pid,SIGSTOP);
+                    if(res == -1){
+                        printf("error in SIGSTOP %s\n", strerror(errno));
+                    }
+                    else{       
+                        printf("Eseguita la %s con pid %d! \n",comm,pid);
+                    }
                 }
                 else{
-                    printf("non permesso\n");
+                    printf("Quindi non si puo sospendere\n");
                 }
             }
             else if(strcmp("terminate",comm)==0){
                 if(*stato=='S'){                              
-                kill((pid_t)pid,SIGTERM);
-                printf("eseguita la %s con pid %d! \n",comm,pid);
-                }
+                    int res =kill((pid_t)pid,SIGTERM);
+                    if(res == -1){
+                        printf("error in SIGTERM %s\n", strerror(errno));
+                    }
+                    else{  
+                    printf("eseguita la %s con pid %d! \n",comm,pid);
+                    }
+                }   
                 else{
-                    printf("non permesso\n");
+                    printf("Quindi non si puo terminare\n");
                 }
                 
             }
             else if(strcmp("resume",comm)==0){
                 if(*stato=='S'){
-                kill((pid_t)pid,SIGCONT);
-                printf("eseguita la %s con pid %d! \n",comm,pid);
+                    int res = kill((pid_t)pid,SIGCONT);
+                    if(res == -1){
+                        printf("error in SIGCONT %s\n", strerror(errno));
+                    }
+                    else{  
+                        printf("eseguita la %s con pid %d! \n",comm,pid);
+                    }  
                 }
                 else{
-                    printf("non permesso\n");
+                    printf("Quindi non si puo resumare\n");
                 }
             }
             else if(strcmp("kill",comm)==0){
-                kill((pid_t)pid,SIGKILL);
-                printf("eseguita la %s con pid %d! \n",comm,pid);
+                int res = kill((pid_t)pid,SIGKILL);
+                if(res == -1){
+                    printf("error in SIGKILL %s\n", strerror(errno));
+                }  
+                else{  
+                    printf("eseguita la %s con pid %d! \n",comm,pid);
+                }
             }
             else{
                 printf("%s %d non è un comando valido: help per l' elenco dei comandi\n",command,pid);
             }
         }
         else{
-            printf("Too few/many arguments\n");
+            printf("C hai messo troppa roba o non ci hai scritto nulla\n");
         }
     }
      
