@@ -11,6 +11,8 @@ typedef struct Process{
   struct Process* next;
 }Process_t;
 
+
+
 Process_t* init(void);
 
 void insert(Process_t** p, int pid, char* status, float cpu_usage,float vsize, char* command);
