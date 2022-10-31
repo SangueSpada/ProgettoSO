@@ -16,6 +16,7 @@
 
 long Hertz=0;
 long uptime=0;
+Process_t* p = NULL;
 
 
 
@@ -115,7 +116,7 @@ long get_uptime(){
 }
 
 
-void processdir(const struct dirent *piddir, Process_t* process)
+void processdir(const struct dirent *piddir)
 {
 
     char *lines = NULL;
@@ -145,7 +146,7 @@ void processdir(const struct dirent *piddir, Process_t* process)
     float cpu_usage= 100 *( (total_time/Hertz)/seconds);
     float vsize = atoi(data[22])/1024;
     char* command= data[1];
-    insert(&process,pid,status,cpu_usage,vsize,command);
+    insert(&p,pid,status,cpu_usage,vsize,command);
 
 
     fclose(f);
@@ -157,9 +158,6 @@ int main(int argc, int* argv) {
     //variabili inizializzate per leggere /proc
     DIR *procdir;
     struct dirent *procentry;
-
-    //inizializzazione linked list
-    Process_t *p =NULL;
 
 
     //variabili inizializzate per calcolo CPU usage
@@ -188,7 +186,7 @@ int main(int argc, int* argv) {
 
         // il nome di ogni processo e' il PID che coincide con un codice numerico diverso da 0       
         if (!fnmatch("[1-9]*", procentry->d_name, 0)) { 
-             processdir(procentry,p);
+             processdir(procentry);
         }
     }
     print(p);
