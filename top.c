@@ -145,7 +145,7 @@ void processdir(const struct dirent *piddir)
                 }
             }
             else if(strcmp("terminate",comm)==0){
-                if(*stato=='T'){                              
+                if(*stato!='T'){                              
                     int res =kill((pid_t)pid,SIGTERM);
                     if(res == -1){
                         printf("error in SIGTERM %s\n", strerror(errno));
