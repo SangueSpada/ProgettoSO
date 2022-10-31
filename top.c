@@ -77,6 +77,9 @@ char** split_string(char *line, int* s) {
     const char* delimiter = " ";
     char * tmp;
 
+
+
+
     tmp = strtok(line, delimiter);
     if (tmp == NULL){
     return NULL;
@@ -85,12 +88,36 @@ char** split_string(char *line, int* s) {
     res[index]=tmp;
     index++;
     //printf("%s\n", tmp);
-    tmp = strtok(NULL, ")");
+    
+    char* p=line;
+    char* ress=(char*)malloc(30*sizeof(char));
+    int iii=0;
+    while(p!=NULL){
+        if(*p=='('){
+            //tmp = strtok(NULL,"(");
+            ress[iii]='(';
+            iii++;
+            p++;
+            while(!(*p==')'&& *(p+1)==' ')){
+                ress[iii]=*p;
+                iii++;
+                p++;
 
-    char * d=concat(tmp,')'); 
-    //il comm puo avere spazi quindi essendo il secondo token ci arrangiamo direttamente cosi. 
+            }
+            ress[iii]=')';
+            p+=2;
+            ress[iii+1]='\0';
+            break;
+        }
+        p++;
+    }    
 
-    res[index]=d;
+
+    res[index]=ress;
+    index++;
+
+    tmp=strtok(p,delimiter);
+    res[index]=tmp;
     index++;
 
     for (;;) {
@@ -135,7 +162,11 @@ void processdir(const struct dirent *piddir)
     }
 
     //calcoli temporali per CPU Usage
-    float total_time= atoi(data[13])+atoi(data[14])+atoi(data[15])+atoi(data[16]);
+    // data[13] = cpu time spent in user code
+    //data[14] = cpu time spent in kernel code
+    //data[15]= cpu time in user code + time waiting children
+    //data[16]= cpu time spent in kernel code + time waiting children
+    float total_time= atoi(data[13])+atoi(data[14]);
     float seconds= uptime - (atoi(data[21])/Hertz);
 
 
