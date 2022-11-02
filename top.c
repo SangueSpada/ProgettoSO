@@ -34,30 +34,30 @@ void processdir(const struct dirent *piddir)
 
 
     char** data;
-    int s=0;
 
     if(getline(&lines, &size, f) != -1){
-        data=split_string(lines, &s);
+        data=split_string(lines); //parsing the line
     }
 
     //calcoli temporali per CPU Usage
-    // data[13] = cpu time spent in user code
-    //data[14] = cpu time spent in kernel code
-    //data[15]= cpu time in user code + time waiting children
-    //data[16]= cpu time spent in kernel code + time waiting children
-    float total_time= atoi(data[13])+atoi(data[14]);
-    float seconds= uptime - (atoi(data[21])/Hertz);
+    // data[13] = cpu time spent in user mode
+    //data[14] = cpu time spent in kernel mode
+    //data[15]= cpu time in user mode + time waiting children
+    //data[16]= cpu time spent in kernel mode + time waiting children
+    //data[21]= time when process started since the system boot measured in nanoseconds.
+    float total_time= atoi(data[13])+atoi(data[14]); //tempo esecuzione del processo
+    float seconds= uptime - (atoi(data[21])/Hertz); //tempo del SO - tempo attivita' del processo
 
 
     //values
     
     int pid = atoi(piddir->d_name);
     char* status = data[2];
-    float cpu_usage= 100 *( (total_time/Hertz)/seconds);
+    float cpu_usage= 100 *( (total_time/Hertz)/seconds); // 100 * tempo di utilizzo / tempo non dedicato al processo
     float vsize = atoi(data[22])/1024;
     char* command= data[1];
     insert(&p,pid,status,cpu_usage,vsize,command);
-
+    free(data); 
 
     fclose(f);
     

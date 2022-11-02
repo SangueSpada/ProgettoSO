@@ -7,7 +7,7 @@ A cura di Aras Leonardo Kankilic (1888465) e Francesco Saverio Sconocchia Pisoni
 ## Funzionamento
 Top è un task manager che mostra PID, STATO, CPU USAGE(%), MEM USAGE(kb) e nome assegnato a tutti i processi in esecuzione su Linux come l'omonimo programma già esistente.
 
-Ciò che contraddistingue questo programma è la possibilita di poter inviare istantaneamente segnali suspend, resume, terminate e kill ai processi inserendo il comando e il pid desiderati.
+Ciò che contraddistingue questo programma è la possibilità di poter inviare istantaneamente segnali suspend, resume, terminate e kill ai processi inserendo il comando e il pid desiderati.
 
 Tramite `help` è possibile consultare la lista dei comandi sopraelencati. Inoltre i processi sono ordinati per utilizzo della cpu, in modo crescente, cosi da identificare velocemente eventuali programmi pesanti in esecuzione da poter terminare.
 

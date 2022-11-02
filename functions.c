@@ -32,9 +32,9 @@ char* states(int pid, Process_t *process){
 
 
 
-char** split_string(char *line, int* s) {
+char** split_string(char *line) {
 
-    char** res=(char **)malloc(100*sizeof(char*));
+    char** res=(char **)malloc(46*sizeof(char*));
 
     int index=0;
     const char* delimiter = " ";
@@ -86,7 +86,6 @@ char** split_string(char *line, int* s) {
     for (;;) {
         tmp = strtok(NULL, delimiter);
         if (tmp == NULL){
-            *s=index; //size della res
             return res;
         }
         
